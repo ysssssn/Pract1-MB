@@ -16,6 +16,7 @@ import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.client.solrj.response.QueryResponse;
+import org.apache.solr.client.solrj.util.ClientUtils;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 
@@ -25,7 +26,8 @@ public class QueryMedRunner {
 	private static final String CORE = "med";
 
 	private static final String MED_QRY_PATH = "./collection/MED.QRY"; // ruta
-	private static final String OUTPUT_PATH = "./results/solr_results_v02.tsv"; // fichero de salida
+	private static final String OUTPUT_PATH = "./results/solr_results_trec.txt"; // fichero de salida
+	private static final String RUN_TAG = "MIO"; // etiqueta para trec_eval
 	private static final int TOP_K = 10; // numero de resultados por consulta
 
 	public static void main(String[] args) throws Exception {
@@ -38,17 +40,16 @@ public class QueryMedRunner {
 			try (BufferedWriter out = new BufferedWriter(
 					new OutputStreamWriter(new FileOutputStream(OUTPUT_PATH), StandardCharsets.UTF_8))) {
 
-				out.write("qid\trank\tdocid\tscore\ttitle\tquery_5w\tquery_text\n");
-
 				for (QueryItem q : queries) {
-					String fiveWords = firstNWords(q.text, 5);
 
-					String solrQ = String.format("title:(%s) OR abstract:(%s)", fiveWords, fiveWords);
+					String fullQueryText = ClientUtils.escapeQueryChars(q.text);
+
+					String solrQ = String.format("title:(%s) OR abstract:(%s)", fullQueryText, fullQueryText);
 
 					SolrQuery query = new SolrQuery();
 					query.setQuery(solrQ);
 					query.setRows(TOP_K);
-					query.setFields("id", "title", "score");
+					query.setFields("id", "score");
 
 					QueryResponse rsp = client.query(CORE, query);
 					SolrDocumentList docs = rsp.getResults();
@@ -56,14 +57,10 @@ public class QueryMedRunner {
 					int rank = 1;
 					for (SolrDocument d : docs) {
 						String id = String.valueOf(d.getFieldValue("id"));
-						Object t = d.getFieldValue("title");
-						String title = (t == null) ? "" : t.toString().replace('\t', ' ').replace('\n', ' ');
 						Object s = d.getFieldValue("score");
-						String score = (s == null) ? "" : s.toString();
+						String score = (s == null) ? "0.0" : s.toString();
 
-						out.write(q.id + "\t" + rank + "\t" + id + "\t" + score + "\t" + title + "\t"
-								+ fiveWords.replace('\t', ' ') + "\t" + q.text.replace('\t', ' ').replace('\n', ' ')
-								+ "\n");
+						out.write(String.format("%s Q0 %s %d %s %s\n", q.id, id, (rank - 1), score, RUN_TAG));
 						rank++;
 					}
 				}
@@ -119,21 +116,6 @@ public class QueryMedRunner {
 			}
 		}
 		return list;
-	}
-
-	private static String firstNWords(String text, int n) {
-		if (text == null)
-			return "";
-
-		String cleaned = text.replaceAll("[\\p{Punct}]+", " ").toLowerCase();
-		String[] toks = cleaned.trim().split("\\s+");
-		StringBuilder sb = new StringBuilder();
-		for (int i = 0; i < toks.length && i < n; i++) {
-			if (i > 0)
-				sb.append(' ');
-			sb.append(toks[i]);
-		}
-		return sb.toString();
 	}
 
 	private static class QueryItem {
