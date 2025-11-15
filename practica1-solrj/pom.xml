@@ -3,12 +3,35 @@
   <groupId>uhu.mb</groupId>
   <artifactId>practica1-solrj</artifactId>
   <version>0.0.1-SNAPSHOT</version>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <maven.compiler.source>21</maven.compiler.source>
+    <maven.compiler.target>21</maven.compiler.target>
+    <maven.compiler.release>21</maven.compiler.release>
+    <java.version>21</java.version>
+  </properties>
+
   <dependencies>
-  <!-- https://mvnrepository.com/artifact/org.apache.solr/solr-solrj -->
-	<dependency>
-    <groupId>org.apache.solr</groupId>
-    <artifactId>solr-solrj</artifactId>
-    <version>9.9.0</version>
-	</dependency>
+    <!-- https://mvnrepository.com/artifact/org.apache.solr/solr-solrj -->
+    <dependency>
+      <groupId>org.apache.solr</groupId>
+      <artifactId>solr-solrj</artifactId>
+      <version>9.9.0</version>
+    </dependency>
   </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.11.0</version>
+        <configuration>
+          <release>21</release>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
 </project>
