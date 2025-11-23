@@ -16,14 +16,14 @@ import org.apache.solr.common.SolrInputDocument;
 
 public class IndexMedAll {
 
-	private static final String SOLR_BASE = "http://localhost:8983/solr";
-	private static final String CORE = "med";
+	private static final String SOLR_BASE = "http://localhost:8983/solr/med";
+	private static final String CORE = "";
 	private static final String MED_PATH = "./collection/MED.ALL";
 
 	public static void main(String[] args) throws Exception {
 		try (SolrClient client = new HttpSolrClient.Builder(SOLR_BASE).build()) {
-			indexMedAll(client, MED_PATH, CORE);
-			client.commit(CORE);
+			indexMedAll(client, MED_PATH, "");
+			client.commit("");
 			System.out.println("Indexación completada.");
 		}
 	}
@@ -107,9 +107,11 @@ public class IndexMedAll {
 		return doc;
 	}
 
+	// En IndexMedAll.java, busca la línea 112
 	private static void sendBatch(SolrClient client, String core, List<SolrInputDocument> batch)
 			throws SolrServerException, IOException {
-		UpdateResponse rsp = client.add(core, batch);
+		// Usa "" en lugar de 'core', porque el cliente ya apunta al core
+		UpdateResponse rsp = client.add("", batch);
 		System.out.println("Añadidos " + batch.size() + " docs. Status=" + rsp.getStatus());
 	}
 }

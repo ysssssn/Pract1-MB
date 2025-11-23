@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Buscador Solr - Proyecto SRI</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        .error-message {
+            color: red;
+            border: 1px solid red;
+            padding: 10px;
+            margin-bottom: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        .snippet {
+            font-size: 0.9em;
+            color: #555;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Buscador Solr: Corpus MED.ALL</h1>
+
+    <form action="/search" method="get">
+        <input type="text" name="query" th:value="${query}" placeholder="Escribe tu consulta..." size="50" />
+        <button type="submit">Buscar</button>
+    </form>
+
+    <hr />
+
+    <div th:if="${error}" class="error-message">
+        <strong>ERROR DEL SISTEMA:</strong> <span th:text="${error}"></span>
+    </div>
+
+    <div th:if="${!#strings.isEmpty(query)}">
+        <h2 th:text="|Resultados para '${query}' (${resultados.size()} encontrados)|"></h2>
+
+        <table th:if="${!resultados.empty}">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Título</th>
+                    <th>Resumen (Fragmento)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="doc : ${resultados}">
+                    <td th:text="${doc.id}">1</td>
+                    <td th:text="${doc.titulo}">Título del Documento</td>
+                    <td class="snippet"
+                        th:text="${#strings.length(doc.resumen) > 300 ? #strings.append(#strings.substring(doc.resumen, 0, 300), '...') : doc.resumen}">
+                        Resumen parcial</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <p th:if="${resultados.empty}">No se encontraron documentos para la consulta.</p>
+    </div>
+</body>
+
+</html>
